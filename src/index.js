@@ -54,17 +54,17 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
   const { user } = request;
   const { title, deadline } = request.body;
 
-  const todo = {
-    id: uuidv4(),
+  const id = uuidv4();
+
+  user.todos.push({
+    id: id,
     title,
     done: false,
     deadline: new Date(deadline),
     created_at: new Date(),
-  };
+  });
 
-  user.todo.push(todo);
-
-  return response.status(201).json(todo);
+  return response.status(201).json(user.todos.find((todos) => todos.id === id));
 });
 
 app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
@@ -103,13 +103,14 @@ app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
   const { user } = request;
   const { id } = request.params;
 
-  const todoIndex = user.todos.findIndex((todo) => todo.id === id);
+  const todo = user.todos.find((todo) => todo.id === id);
 
-  if (!todoIndex === -1) {
+  if (!todo) {
     return response.status(404).json({ error: "Todo not found!" });
   }
 
-  user.todos.splice(todoIndex, 1);
+  const index = user.todos.indexOf(todo);
+  user.todos.splice(index, 1);
 
   response.status(204).send();
 });
